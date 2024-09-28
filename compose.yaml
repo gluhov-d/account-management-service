@@ -1,0 +1,9 @@
+services:
+  postgres:
+    image: 'postgres:latest'
+    environment:
+      - 'POSTGRES_DB=account_management'
+      - 'POSTGRES_PASSWORD=accountmanagement'
+      - 'POSTGRES_USER=accountmanagement'
+    ports:
+      - 55722:5432
