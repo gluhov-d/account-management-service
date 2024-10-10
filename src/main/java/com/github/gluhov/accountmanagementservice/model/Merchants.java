@@ -28,10 +28,11 @@ public class Merchants extends VerifiedEntity {
     private boolean filled;
 
     @Builder
-    public Merchants(UUID id, Status status, LocalDateTime verifiedAt, LocalDateTime archivedAt, LocalDateTime created,
-                     LocalDateTime updated, String companyName, UUID creatorId, String email, String phoneNumber, boolean filled) {
-        super(id, status, verifiedAt, archivedAt, created, updated);
+    public Merchants(UUID id, Status status, LocalDateTime created, LocalDateTime updated, LocalDateTime verifiedAt,
+                     LocalDateTime archivedAt, String companyName, Users creator, UUID creatorId, String email, String phoneNumber, boolean filled) {
+        super(id, status, created, updated, verifiedAt, archivedAt);
         this.companyName = companyName;
+        this.creator = creator;
         this.creatorId = creatorId;
         this.email = email;
         this.phoneNumber = phoneNumber;

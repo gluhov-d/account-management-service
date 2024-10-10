@@ -22,8 +22,10 @@ public class Individuals extends VerifiedEntity {
     private String passportNumber;
 
     @Builder
-    public Individuals(UUID id, Status status, LocalDateTime created, LocalDateTime updated, LocalDateTime verifiedAt, LocalDateTime archivedAt, UUID userId, String passportNumber, String phoneNumber, String email) {
+    public Individuals(UUID id, Status status, LocalDateTime created, LocalDateTime updated, LocalDateTime verifiedAt,
+                       LocalDateTime archivedAt, Users user, UUID userId, String passportNumber) {
         super(id, status, created, updated, verifiedAt, archivedAt);
+        this.user = user;
         this.userId = userId;
         this.passportNumber = passportNumber;
     }
