@@ -125,3 +125,5 @@ CREATE TABLE person.merchant_members_invitations (
     status VARCHAR(32)
 );
 ```
+
+Оптимизировать схему
