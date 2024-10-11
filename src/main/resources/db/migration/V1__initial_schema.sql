@@ -14,7 +14,7 @@ CREATE TABLE addresses (
                                   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
                                   created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                                   updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                                  country_id INTEGER REFERENCES countries (id),
+                                  country_id UUID REFERENCES countries (id),
                                   address VARCHAR(128),
                                   zip_code VARCHAR(32),
                                   archived_at TIMESTAMP,
