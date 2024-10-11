@@ -47,7 +47,8 @@ public class MerchantsService {
                         }));
     }
 
-    @Transactional Mono<MerchantsDto> update(MerchantsDto merchantsDto) {
+    @Transactional
+    public Mono<MerchantsDto> update(MerchantsDto merchantsDto) {
         return merchantsRepository.findById(merchantsDto.getId())
                 .switchIfEmpty(Mono.error(new EntityNotFoundException("Merchant not found", "AMS_MERCHANT_NOT_FOUND")))
                 .flatMap(savedMerchant -> userService.update(merchantsDto.getCreator())
