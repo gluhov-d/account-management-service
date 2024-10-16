@@ -20,8 +20,6 @@ public abstract class BaseEntity implements Persistable<UUID> {
     @Id
     @Column("id")
     private UUID id;
-    @Column("status")
-    private Status status;
     @Column("created")
     private LocalDateTime created;
     @Column("updated")

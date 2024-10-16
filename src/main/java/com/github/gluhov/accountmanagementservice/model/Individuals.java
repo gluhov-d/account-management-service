@@ -1,32 +1,50 @@
 package com.github.gluhov.accountmanagementservice.model;
 
-import lombok.*;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Transient;
+import org.springframework.data.domain.Persistable;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
-import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.UUID;
 
 @Table("individuals")
 @Data
-@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
-@AllArgsConstructor
-public class Individuals extends VerifiedEntity {
+public class Individuals implements Persistable<UUID> {
+    @Id
+    @Column("id")
+    private UUID id;
     @Transient
     private Users user;
     @Column("user_id")
     private UUID userId;
     @Column("passport_number")
     private String passportNumber;
+    @Column("email")
+    private String email;
+    @Column("phone_number")
+    private String phoneNumber;
 
     @Builder
-    public Individuals(UUID id, Status status, LocalDateTime created, LocalDateTime updated, LocalDateTime verifiedAt,
-                       LocalDateTime archivedAt, Users user, UUID userId, String passportNumber) {
-        super(id, status, created, updated, verifiedAt, archivedAt);
+    public Individuals(UUID id, Users user, UUID userId, String passportNumber, String email, String phoneNumber) {
+        this.id = id;
         this.user = user;
         this.userId = userId;
         this.passportNumber = passportNumber;
+        this.email = email;
+        this.phoneNumber = phoneNumber;
+    }
+
+    @Override
+    @Transient
+    public boolean isNew() {
+        boolean result = Objects.isNull(id);
+        this.id = result ? UUID.randomUUID() : this.id;
+        return result;
     }
 }

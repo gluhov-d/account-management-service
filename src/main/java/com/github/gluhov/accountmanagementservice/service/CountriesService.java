@@ -18,11 +18,6 @@ import java.util.UUID;
 public class CountriesService {
     private final CountriesRepository countriesRepository;
 
-    public Mono<Countries> findByName(String name) {
-        return countriesRepository.findByName(name)
-                .switchIfEmpty(Mono.error(new EntityNotFoundException("Country not found", "AMS_COUNTRY_NOT_FOUND")));
-    }
-
     public Mono<Countries> getById(UUID uuid) {
         return countriesRepository.findById(uuid)
                 .switchIfEmpty(Mono.error(new EntityNotFoundException("Country not found", "AMS_COUNTRY_NOT_FOUND")));

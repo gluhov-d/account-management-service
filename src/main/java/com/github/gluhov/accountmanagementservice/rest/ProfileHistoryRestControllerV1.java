@@ -3,10 +3,12 @@ package com.github.gluhov.accountmanagementservice.rest;
 import com.github.gluhov.accountmanagementservice.service.ProfileHistoryService;
 import com.github.gluhov.dto.ProfileHistoryDtoListResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
 import java.util.UUID;
@@ -30,11 +32,5 @@ public class ProfileHistoryRestControllerV1 {
         return profileHistoryService.getAllByProfileId(id)
                 .collectList()
                 .map(profileHistoryDtos -> ResponseEntity.ok().body(new ProfileHistoryDtoListResponse(profileHistoryDtos)));
-    }
-
-    @DeleteMapping(value = "/history/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public Mono<Void> deleteById(@PathVariable UUID id) {
-        return profileHistoryService.deleteById(id);
     }
 }

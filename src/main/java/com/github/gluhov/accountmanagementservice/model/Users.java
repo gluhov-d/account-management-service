@@ -28,9 +28,9 @@ public class Users extends VerifiedEntity {
     private UUID addressId;
 
     @Builder
-    public Users(UUID id, Status status, LocalDateTime created, LocalDateTime updated, LocalDateTime verifiedAt,
+    public Users(UUID id, LocalDateTime created, LocalDateTime updated, Status status, LocalDateTime verifiedAt,
                  LocalDateTime archivedAt, String secretKey, String firstName, String lastName, boolean filled, Addresses addresses, UUID addressId) {
-        super(id, status, created, updated, verifiedAt, archivedAt);
+        super(id, created, updated, status, verifiedAt, archivedAt);
         this.secretKey = secretKey;
         this.firstName = firstName;
         this.lastName = lastName;

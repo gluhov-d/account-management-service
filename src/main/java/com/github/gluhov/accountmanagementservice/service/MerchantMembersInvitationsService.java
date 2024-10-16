@@ -22,21 +22,23 @@ public class MerchantMembersInvitationsService {
     private final MerchantsService merchantsService;
     private final MerchantMembersInvitationsMapper merchantMembersInvitationsMapper;
 
-    public Mono<MerchantMembersInvitations> save(MerchantMembersInvitations merchantMembersInvitations) {
+    public Mono<MerchantMembersInvitationsDto> save(MerchantMembersInvitationsDto merchantMembersInvitationsDto) {
         return merchantMembersInvitationsRepository.save(
                 MerchantMembersInvitations.builder()
-                        .merchantId(merchantMembersInvitations.getMerchantId())
-                        .email(merchantMembersInvitations.getEmail())
-                        .expires(merchantMembersInvitations.getExpires())
-                        .firstName(merchantMembersInvitations.getFirstName())
-                        .lastName(merchantMembersInvitations.getLastName())
+                        .merchantId(merchantMembersInvitationsDto.getMerchantId())
+                        .email(merchantMembersInvitationsDto.getEmail())
+                        .expires(merchantMembersInvitationsDto.getExpires())
+                        .firstName(merchantMembersInvitationsDto.getFirstName())
+                        .lastName(merchantMembersInvitationsDto.getLastName())
                         .build())
-                .doOnSuccess(m -> log.info("In save - merchant member invitation: {} saved", m));
+                .doOnSuccess(m -> log.info("In save - merchant member invitation: {} saved", m))
+                .flatMap(this::constructMerchantMembersInvitationsDto);
     }
 
-    public Mono<MerchantMembersInvitations> getById(UUID uuid) {
+    public Mono<MerchantMembersInvitationsDto> getById(UUID uuid) {
         return merchantMembersInvitationsRepository.findById(uuid)
-                .switchIfEmpty(Mono.error(new EntityNotFoundException("Merchant member invitation not found", "AMS_MERCHANT_MEMBER_INVITATION_NOT_FOUND")));
+                .switchIfEmpty(Mono.error(new EntityNotFoundException("Merchant member invitation not found", "AMS_MERCHANT_MEMBER_INVITATION_NOT_FOUND")))
+                .flatMap(this::constructMerchantMembersInvitationsDto);
     }
 
     public Mono<Void> deleteById(UUID uuid) {
@@ -51,7 +53,7 @@ public class MerchantMembersInvitationsService {
     }
 
     public Flux<MerchantMembersInvitationsDto> getAllByMerchantId(UUID uuid) {
-        return merchantMembersInvitationsRepository.getAllByMerchantId(uuid)
+        return merchantMembersInvitationsRepository.getAllActiveByMerchantId(uuid)
                 .flatMap(this::constructMerchantMembersInvitationsDto);
     }
 

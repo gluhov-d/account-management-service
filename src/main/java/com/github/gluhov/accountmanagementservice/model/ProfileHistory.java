@@ -28,9 +28,10 @@ public class ProfileHistory extends BaseEntity {
     private String changedValues;
 
     @Builder
-    public ProfileHistory(UUID id, Status status, LocalDateTime created, LocalDateTime updated, Users user, UUID profileId,
+
+    public ProfileHistory(UUID id, LocalDateTime created, LocalDateTime updated, Users user, UUID profileId,
                           String profileType, String reason, String comment, String changedValues) {
-        super(id, status, created, updated);
+        super(id, created, updated);
         this.user = user;
         this.profileId = profileId;
         this.profileType = profileType;

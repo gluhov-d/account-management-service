@@ -13,14 +13,14 @@ import java.util.UUID;
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
-public abstract class VerifiedEntity extends BaseEntity {
+public abstract class VerifiedEntity extends StatusEntity {
     @Column("verified_at")
     private LocalDateTime verifiedAt;
     @Column("archived_at")
     private LocalDateTime archivedAt;
 
-    public VerifiedEntity(UUID id, Status status, LocalDateTime created, LocalDateTime updated, LocalDateTime verifiedAt, LocalDateTime archivedAt) {
-        super(id, status, created, updated);
+    public VerifiedEntity(UUID id, LocalDateTime created, LocalDateTime updated, Status status, LocalDateTime verifiedAt, LocalDateTime archivedAt) {
+        super(id, created, updated, status);
         this.verifiedAt = verifiedAt;
         this.archivedAt = archivedAt;
     }

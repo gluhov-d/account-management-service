@@ -5,7 +5,6 @@ import com.github.gluhov.accountmanagementservice.mapper.MerchantMembersMapper;
 import com.github.gluhov.accountmanagementservice.model.MerchantMembers;
 import com.github.gluhov.accountmanagementservice.model.ProfileHistory;
 import com.github.gluhov.accountmanagementservice.model.Role;
-import com.github.gluhov.accountmanagementservice.model.Status;
 import com.github.gluhov.accountmanagementservice.repository.MerchantMembersRepository;
 import com.github.gluhov.accountmanagementservice.util.EntityDtoComparator;
 import com.github.gluhov.dto.MerchantMembersDto;
@@ -16,7 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Service
@@ -59,7 +57,6 @@ public class MerchantMembersService {
                                         MerchantMembers.builder()
                                                 .id(savedMerchantMember.getId())
                                                 .merchantId(savedMerchantDto.getId())
-                                                .updated(LocalDateTime.now())
                                                 .memberRole(Role.valueOf(merchantMembersDto.getMemberRole().toUpperCase()))
                                                 .userId(updatedUserDto.getId())
                                                 .build())
@@ -102,25 +99,22 @@ public class MerchantMembersService {
     public Mono<Void> deleteById(UUID uuid) {
         return merchantMembersRepository.findById(uuid)
                 .switchIfEmpty(Mono.error(new EntityNotFoundException("Merchant member not found", "AMS_MERCHANT_MEMBER_NOT_FOUND")))
-                .flatMap(merchantMembers -> {
-                    merchantMembers.setUpdated(LocalDateTime.now());
-                    merchantMembers.setStatus(Status.ARCHIVED);
-                    return merchantMembersRepository.save(merchantMembers)
-                            .doOnSuccess(m -> log.info("In delete - merchant member: {} deleted", m))
-                            .flatMap(savedMerchantMember -> profileHistoryService.save(
-                                    ProfileHistory.builder()
-                                            .profileId(merchantMembers.getUserId())
-                                            .reason("delete")
-                                            .comment("delete merchant member")
-                                            .profileType("merchant member")
-                                            .changedValues("status:ARCHIVED;updated:" + merchantMembers.getUpdated() + ";")
-                                            .build()
-                            )).then();
-                });
+                .flatMap(merchantMembers -> usersService.deleteById(merchantMembers.getUserId())
+                        .flatMap(deletedUser -> merchantMembersRepository.save(merchantMembers)
+                                .doOnSuccess(m -> log.info("In delete - merchant member: {} deleted", m))
+                                .flatMap(savedMerchantMember -> profileHistoryService.save(
+                                        ProfileHistory.builder()
+                                                .profileId(merchantMembers.getUserId())
+                                                .reason("delete")
+                                                .comment("delete merchant member")
+                                                .profileType("merchant member")
+                                                .changedValues("status:ARCHIVED;archivedAt:" + merchantMembers.getUser().getArchivedAt() + ";")
+                                                .build()
+                                )).then()));
     }
 
     public Flux<MerchantMembersDto> getAllByMerchantId(UUID uuid) {
-        return merchantMembersRepository.getAllByMerchantId(uuid)
+        return merchantMembersRepository.getAllActiveByMerchantId(uuid)
                 .flatMap(this::constructMerchantMembersDto);
     }
 }

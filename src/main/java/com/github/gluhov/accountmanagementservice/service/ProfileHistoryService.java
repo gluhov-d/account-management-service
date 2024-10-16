@@ -3,7 +3,6 @@ package com.github.gluhov.accountmanagementservice.service;
 import com.github.gluhov.accountmanagementservice.exception.EntityNotFoundException;
 import com.github.gluhov.accountmanagementservice.mapper.ProfileHistoryMapper;
 import com.github.gluhov.accountmanagementservice.model.ProfileHistory;
-import com.github.gluhov.accountmanagementservice.model.Status;
 import com.github.gluhov.accountmanagementservice.repository.ProfileHistoryRepository;
 import com.github.gluhov.dto.ProfileHistoryDto;
 import lombok.RequiredArgsConstructor;
@@ -40,17 +39,6 @@ public class ProfileHistoryService {
                     ProfileHistoryDto profileHistoryDto = profileHistoryMapper.map(profileHistory);
                     profileHistoryDto.setUser(savedUserDto);
                     return Mono.just(profileHistoryDto);
-                });
-    }
-
-    public Mono<Void> deleteById(UUID uuid) {
-        return profileHistoryRepository.findById(uuid)
-                .switchIfEmpty(Mono.error(new EntityNotFoundException("Profile history not found", "AMS_PROFILE_HIS_NOT_FOUND")))
-                .flatMap(profileHistory -> {
-                    profileHistory.setStatus(Status.ARCHIVED);
-                    return profileHistoryRepository.save(profileHistory)
-                            .doOnSuccess(p -> log.info("In delete - profile history: {} deleted", p))
-                            .then();
                 });
     }
 

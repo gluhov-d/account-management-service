@@ -13,8 +13,7 @@ import java.util.UUID;
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder(toBuilder = true)
-public class MerchantMembersInvitations extends BaseEntity {
+public class MerchantMembersInvitations extends StatusEntity {
     @Column("expires")
     private LocalDateTime expires;
     @Transient
@@ -28,10 +27,12 @@ public class MerchantMembersInvitations extends BaseEntity {
     @Column("email")
     private String email;
 
-    public MerchantMembersInvitations(UUID id, Status status, LocalDateTime created, LocalDateTime updated,
-                                      LocalDateTime expires, UUID merchantId, String firstName, String lastName, String email) {
-        super(id, status, created, updated);
+    @Builder
+    public MerchantMembersInvitations(UUID id, LocalDateTime created, LocalDateTime updated, Status status,
+                                      LocalDateTime expires, Merchants merchant, UUID merchantId, String firstName, String lastName, String email) {
+        super(id, created, updated, status);
         this.expires = expires;
+        this.merchant = merchant;
         this.merchantId = merchantId;
         this.firstName = firstName;
         this.lastName = lastName;

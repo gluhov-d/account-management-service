@@ -9,6 +9,6 @@ import java.util.UUID;
 
 public interface MerchantMembersRepository extends R2dbcRepository<MerchantMembers, UUID> {
 
-    @Query("SELECT * FROM merchant_members WHERE merchant_id=:1")
-    Flux<MerchantMembers> getAllByMerchantId(UUID uuid);
+    @Query("SELECT * FROM merchant_members m WHERE m.merchant_id=:1")
+    Flux<MerchantMembers> getAllActiveByMerchantId(UUID uuid);
 }

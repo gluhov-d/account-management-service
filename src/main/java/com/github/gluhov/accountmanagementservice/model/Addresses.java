@@ -30,9 +30,9 @@ public class Addresses extends BaseEntity {
     private String state;
 
     @Builder
-    public Addresses(UUID id, Status status, LocalDateTime created, LocalDateTime updated, UUID countryId,
-                     Countries country, String address, String zipCode, LocalDateTime archivedAt, String city, String state) {
-        super(id, status, created, updated);
+    public Addresses(UUID id, LocalDateTime created, LocalDateTime updated, UUID countryId, Countries country,
+                     String address, String zipCode, LocalDateTime archivedAt, String city, String state) {
+        super(id, created, updated);
         this.countryId = countryId;
         this.country = country;
         this.address = address;

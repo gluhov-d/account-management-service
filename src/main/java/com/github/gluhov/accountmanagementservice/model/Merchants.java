@@ -28,9 +28,9 @@ public class Merchants extends VerifiedEntity {
     private boolean filled;
 
     @Builder
-    public Merchants(UUID id, Status status, LocalDateTime created, LocalDateTime updated, LocalDateTime verifiedAt,
+    public Merchants(UUID id, LocalDateTime created, LocalDateTime updated, Status status, LocalDateTime verifiedAt,
                      LocalDateTime archivedAt, String companyName, Users creator, UUID creatorId, String email, String phoneNumber, boolean filled) {
-        super(id, status, created, updated, verifiedAt, archivedAt);
+        super(id, created, updated, status, verifiedAt, archivedAt);
         this.companyName = companyName;
         this.creator = creator;
         this.creatorId = creatorId;

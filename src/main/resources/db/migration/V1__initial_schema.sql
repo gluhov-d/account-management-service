@@ -53,24 +53,16 @@ CREATE TABLE merchants (
 CREATE TABLE merchant_members (
                                          id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
                                          user_id UUID UNIQUE REFERENCES users(id),
-                                         created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                                         updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                                          merchant_id UUID REFERENCES merchants(id),
-                                         member_role VARCHAR(32),
-                                         status VARCHAR(32)
+                                         member_role VARCHAR(32)
 );
 
 CREATE TABLE individuals (
                                     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
                                     user_id UUID UNIQUE REFERENCES users(id),
-                                    created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                                    updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                                     passport_number VARCHAR(32),
                                     email VARCHAR(32),
-                                    phone_number VARCHAR(32),
-                                    verified_at TIMESTAMP,
-                                    archived_at TIMESTAMP,
-                                    status VARCHAR(32)
+                                    phone_number VARCHAR(32)
 );
 
 CREATE TABLE profile_history (
@@ -86,7 +78,8 @@ CREATE TABLE profile_history (
 CREATE TABLE merchant_members_invitations (
                                                      id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
                                                      created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                                                     expires TIMESTAMP NOT NULL,
+                                                     updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                                                     expires TIMESTAMP DEFAULT CURRENT_DATE+5,
                                                      merchant_id UUID REFERENCES merchants(id),
                                                      first_name VARCHAR(32),
                                                      last_name VARCHAR(32),

@@ -1,14 +1,13 @@
 package com.github.gluhov.accountmanagementservice.rest;
 
 import com.github.gluhov.accountmanagementservice.service.MerchantMembersInvitationsService;
+import com.github.gluhov.dto.MerchantMembersInvitationsDto;
 import com.github.gluhov.dto.MerchantMembersInvitationsDtoListResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
 import java.util.UUID;
@@ -32,5 +31,16 @@ public class MerchantMembersInvitationsRestControllerV1 {
         return merchantMembersInvitationsService.getAllByMerchantId(id)
                 .collectList()
                 .map(merchantMembersInvitationsDtos -> ResponseEntity.ok().body(new MerchantMembersInvitationsDtoListResponse(merchantMembersInvitationsDtos)));
+    }
+
+    @PostMapping(value = "/invitations")
+    public Mono<?> create(@RequestBody MerchantMembersInvitationsDto merchantMembersInvitationsDto) {
+        return merchantMembersInvitationsService.save(merchantMembersInvitationsDto).map(merchantMemberInvitationDto -> ResponseEntity.ok().body(merchantMemberInvitationDto));
+    }
+
+    @DeleteMapping(value = "/invitations/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public Mono<?> delete(@PathVariable UUID id) {
+        return merchantMembersInvitationsService.deleteById(id);
     }
 }

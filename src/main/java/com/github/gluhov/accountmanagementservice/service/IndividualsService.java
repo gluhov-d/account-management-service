@@ -4,7 +4,6 @@ import com.github.gluhov.accountmanagementservice.exception.EntityNotFoundExcept
 import com.github.gluhov.accountmanagementservice.mapper.IndividualsMapper;
 import com.github.gluhov.accountmanagementservice.model.Individuals;
 import com.github.gluhov.accountmanagementservice.model.ProfileHistory;
-import com.github.gluhov.accountmanagementservice.model.Status;
 import com.github.gluhov.accountmanagementservice.repository.IndividualsRepository;
 import com.github.gluhov.accountmanagementservice.util.EntityDtoComparator;
 import com.github.gluhov.dto.IndividualsDto;
@@ -15,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Service
@@ -34,7 +32,8 @@ public class IndividualsService {
                 .flatMap(savedUserDto -> individualsRepository.save(
                         Individuals.builder()
                                 .passportNumber(individualsDto.getPassportNumber())
-                                .status(Status.ACTIVE)
+                                .email(individualsDto.getEmail())
+                                .phoneNumber(individualsDto.getPhoneNumber())
                                 .userId(savedUserDto.getId())
                                 .build())
                         .doOnSuccess(i -> log.info("In save - individual: {} saved", i))
@@ -53,10 +52,9 @@ public class IndividualsService {
                         .flatMap(updatedUserDto -> individualsRepository.save(
                                 Individuals.builder()
                                         .id(savedIndividual.getId())
-                                        .updated(LocalDateTime.now())
-                                        .verifiedAt(individualsDto.getVerifiedAt())
                                         .passportNumber(individualsDto.getPassportNumber())
-                                        .verifiedAt(individualsDto.getVerifiedAt())
+                                        .phoneNumber(individualsDto.getPhoneNumber())
+                                        .email(individualsDto.getEmail())
                                         .build())
                                 .doOnSuccess(i -> log.info("In update - individual: {} updated", i))
                                 .flatMap(updatedIndividual -> {
@@ -85,21 +83,18 @@ public class IndividualsService {
     public Mono<Void> deleteById(UUID uuid) {
         return individualsRepository.findById(uuid)
                 .switchIfEmpty(Mono.error(new EntityNotFoundException("Individual not found", "AMS_INDIVIDUAL_NOT_FOUND")))
-                .flatMap(individual -> {
-                    individual.setStatus(Status.ARCHIVED);
-                    individual.setArchivedAt(LocalDateTime.now());
-                    return individualsRepository.save(individual)
-                            .doOnSuccess(i -> log.info("In delete - individual: {} deleted", i))
-                            .flatMap(savedIndividual -> profileHistoryService.save(
-                                    ProfileHistory.builder()
-                                            .profileId(individual.getUserId())
-                                            .reason("delete")
-                                            .comment("delete individual")
-                                            .profileType("individual")
-                                            .changedValues("status:ARCHIVED;archivedAt:" + individual.getArchivedAt() + ";")
-                                            .build()
-                            )).then();
-                });
+                .flatMap(individual -> usersService.deleteById(individual.getUserId())
+                        .flatMap(deletedUser -> individualsRepository.save(individual)
+                                .doOnSuccess(i -> log.info("In delete - individual: {} deleted", i))
+                                .flatMap(savedIndividual -> profileHistoryService.save(
+                                        ProfileHistory.builder()
+                                                .profileId(individual.getUserId())
+                                                .reason("delete")
+                                                .comment("delete individual")
+                                                .profileType("individual")
+                                                .changedValues("status:ARCHIVED;archivedAt:" + individual.getUser().getArchivedAt() + ";")
+                                                .build()
+                                )).then()));
     }
 
     public Flux<IndividualsDto> getAll() {

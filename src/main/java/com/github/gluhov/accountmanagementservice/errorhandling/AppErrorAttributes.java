@@ -32,7 +32,7 @@ public class AppErrorAttributes extends DefaultErrorAttributes {
             status = HttpStatus.NOT_FOUND;
             var errorMap = new LinkedHashMap<String, Object>();
             errorMap.put("code", ((EntityNotFoundException) error).getErrorCode());
-            errorMap.put("Message", error.getMessage());
+            errorMap.put("message", error.getMessage());
             errorList.add(errorMap);
         } else if (error instanceof ApiException) {
             status = HttpStatus.BAD_REQUEST;

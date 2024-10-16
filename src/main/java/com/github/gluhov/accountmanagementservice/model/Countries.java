@@ -12,7 +12,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-public class Countries extends BaseEntity {
+public class Countries extends StatusEntity {
     @Column("name")
     private String name;
     @Column("alpha2")
@@ -21,9 +21,8 @@ public class Countries extends BaseEntity {
     private String alpha3;
 
     @Builder
-    public Countries(UUID id, Status status, LocalDateTime created,
-                     LocalDateTime updated, String name, String alpha2, String alpha3) {
-        super(id, status, created, updated);
+    public Countries(UUID id, LocalDateTime created, LocalDateTime updated, Status status, String name, String alpha2, String alpha3) {
+        super(id, created, updated, status);
         this.name = name;
         this.alpha2 = alpha2;
         this.alpha3 = alpha3;

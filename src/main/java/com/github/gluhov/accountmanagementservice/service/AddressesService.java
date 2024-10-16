@@ -2,7 +2,6 @@ package com.github.gluhov.accountmanagementservice.service;
 
 import com.github.gluhov.accountmanagementservice.exception.EntityNotFoundException;
 import com.github.gluhov.accountmanagementservice.model.Addresses;
-import com.github.gluhov.accountmanagementservice.model.Status;
 import com.github.gluhov.accountmanagementservice.repository.AddressesRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,12 +29,13 @@ public class AddressesService {
     }
 
     public Mono<Addresses> save(Addresses addresses) {
-        return countriesService.findByName(addresses.getCountry().getName())
+        return countriesService.getById(addresses.getCountryId())
                 .flatMap(country -> addressesRepository.save(
                         Addresses.builder()
                                 .state(addresses.getState())
                                 .zipCode(addresses.getZipCode())
                                 .countryId(country.getId())
+                                .country(country)
                                 .city(addresses.getCity())
                                 .address(addresses.getAddress())
                                 .build())
@@ -47,16 +47,16 @@ public class AddressesService {
         return getById(uuid)
                 .flatMap(addresses -> {
                     addresses.setArchivedAt(LocalDateTime.now());
-                    addresses.setStatus(Status.ARCHIVED);
                     return addressesRepository.save(addresses).then();
                 });
     }
 
     public Mono<Addresses> update(Addresses addresses) {
         return getById(addresses.getId())
-                .flatMap(savedAddress -> countriesService.findByName(addresses.getCountry().getName())
+                .flatMap(savedAddress -> countriesService.getById(addresses.getCountryId())
                         .flatMap(newCountry -> addressesRepository.save(
                                 Addresses.builder()
+                                        .id(savedAddress.getId())
                                         .country(newCountry)
                                         .state(addresses.getState())
                                         .zipCode(addresses.getZipCode())
