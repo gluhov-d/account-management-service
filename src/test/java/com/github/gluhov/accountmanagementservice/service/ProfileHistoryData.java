@@ -1,10 +1,12 @@
 package com.github.gluhov.accountmanagementservice.service;
 
 import com.github.gluhov.accountmanagementservice.model.ProfileHistory;
+import com.github.gluhov.dto.ProfileHistoryDto;
 
 import java.util.UUID;
 
 import static com.github.gluhov.accountmanagementservice.service.UsersData.USER_MERCHANT_UUID;
+import static com.github.gluhov.accountmanagementservice.service.UsersData.userMerchantTestDataDto;
 
 public class ProfileHistoryData {
     public static final UUID PROFILE_HISTORY_UUID = UUID.fromString("11111111-2222-3333-4444-555555555555");
@@ -17,5 +19,15 @@ public class ProfileHistoryData {
             .comment("update merchant")
             .changedValues("{\"first_name\":\"John\", \"first_name_old\":\"Johnny\"}")
             .reason("update")
+            .build();
+
+    public static ProfileHistoryDto profileHistoryTestDataDto = ProfileHistoryDto.builder()
+            .id(profileHistoryTestData.getId())
+            .profileId(profileHistoryTestData.getProfileId())
+            .profileType(profileHistoryTestData.getProfileType())
+            .user(userMerchantTestDataDto)
+            .comment(profileHistoryTestData.getComment())
+            .reason(profileHistoryTestData.getReason())
+            .changedValues(profileHistoryTestData.getChangedValues())
             .build();
 }

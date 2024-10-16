@@ -18,7 +18,7 @@ import static com.github.gluhov.accountmanagementservice.service.MerchantMembers
 @AutoConfigureWebTestClient
 @Import({PostgreSqlTestContainerConfig.class})
 @ActiveProfiles("test")
-public class MerchantMemberInvitationsRestControllerV1Test extends AbstractRestControllerTest{
+public class ItMerchantMemberInvitationsRestControllerV1Test extends AbstractRestControllerTest{
     private final String REST_URL = MerchantMembersInvitationsRestControllerV1.REST_URL;
 
     @Autowired

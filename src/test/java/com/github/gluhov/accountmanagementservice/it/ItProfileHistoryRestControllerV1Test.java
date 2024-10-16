@@ -18,7 +18,7 @@ import static com.github.gluhov.accountmanagementservice.service.UsersData.USER_
 @AutoConfigureWebTestClient
 @Import({PostgreSqlTestContainerConfig.class})
 @ActiveProfiles("test")
-public class ProfileHistoryRestControllerV1Test extends AbstractRestControllerTest {
+public class ItProfileHistoryRestControllerV1Test extends AbstractRestControllerTest {
     private final String REST_URL = ProfileHistoryRestControllerV1.REST_URL;
 
     @Autowired
