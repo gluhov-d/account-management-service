@@ -114,7 +114,7 @@ public class MerchantMembersService {
     }
 
     public Flux<MerchantMembersDto> getAllByMerchantId(UUID uuid) {
-        return merchantMembersRepository.getAllActiveByMerchantId(uuid)
+        return merchantMembersRepository.getAllByMerchantId(uuid)
                 .flatMap(this::constructMerchantMembersDto);
     }
 }
