@@ -9,7 +9,7 @@ import java.util.UUID;
 
 import static com.github.gluhov.accountmanagementservice.service.MerchantsData.*;
 
-public class MerchantMembersInvitationsData {
+public class MerchantMemberInvitationsData {
     public static final UUID MERCHANT_MEMBER_INVITATION_UUID = UUID.fromString("bbbbbbbb-cccc-dddd-eeee-ffffffffffff");
     public static final UUID MERCHANT_MEMBER_INVITATION_NOT_FOUND_UUID = UUID.fromString("bbbbbbbb-cccc-dddd-eeee-fffffffffff0");
     public static final MerchantMembersInvitations merchantMemberInvitationTestData = MerchantMembersInvitations.builder()

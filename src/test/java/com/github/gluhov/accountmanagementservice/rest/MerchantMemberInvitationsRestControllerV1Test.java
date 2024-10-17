@@ -16,8 +16,8 @@ import reactor.test.StepVerifier;
 
 import java.util.Collections;
 
-import static com.github.gluhov.accountmanagementservice.service.MerchantMembersInvitationsData.MERCHANT_MEMBER_INVITATION_UUID;
-import static com.github.gluhov.accountmanagementservice.service.MerchantMembersInvitationsData.merchantMemberInvitationTestDataDto;
+import static com.github.gluhov.accountmanagementservice.service.MerchantMemberInvitationsData.MERCHANT_MEMBER_INVITATION_UUID;
+import static com.github.gluhov.accountmanagementservice.service.MerchantMemberInvitationsData.merchantMemberInvitationTestDataDto;
 import static com.github.gluhov.accountmanagementservice.service.MerchantsData.MERCHANT_UUID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
