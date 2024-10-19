@@ -6,6 +6,7 @@ import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.UUID;
 
 @Table("profile_history")
@@ -25,12 +26,10 @@ public class ProfileHistory extends BaseEntity {
     @Column("comment")
     private String comment;
     @Column("changed_values")
-    private String changedValues;
+    private Map<String, Object> changedValues;
 
     @Builder
-
-    public ProfileHistory(UUID id, LocalDateTime created, LocalDateTime updated, Users user, UUID profileId,
-                          String profileType, String reason, String comment, String changedValues) {
+    public ProfileHistory(UUID id, LocalDateTime created, LocalDateTime updated, Users user, UUID profileId, String profileType, String reason, String comment, Map<String, Object> changedValues) {
         super(id, created, updated);
         this.user = user;
         this.profileId = profileId;

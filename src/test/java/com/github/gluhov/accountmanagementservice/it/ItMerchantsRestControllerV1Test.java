@@ -25,7 +25,7 @@ public class ItMerchantsRestControllerV1Test extends AbstractRestControllerTest 
     private WebTestClient webTestClient;
 
     @Test
-    @DisplayName("Test get info functionality")
+    @DisplayName("Test get info functionality then success response")
     void givenId_whenGetById_thenSuccessResponse() {
         WebTestClient.ResponseSpec resp = webTestClient.get()
                 .uri(REST_URL + "/" + MERCHANT_UUID + "/details")
@@ -55,7 +55,7 @@ public class ItMerchantsRestControllerV1Test extends AbstractRestControllerTest 
 
     @Test
     @DisplayName("Test create functionality then success response")
-    void givenIndividualData_whenCreate_thenSuccessResponse() {
+    void givenMerchantData_whenCreate_thenSuccessResponse() {
         WebTestClient.ResponseSpec resp = webTestClient.post()
                 .uri(REST_URL)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -72,7 +72,7 @@ public class ItMerchantsRestControllerV1Test extends AbstractRestControllerTest 
 
     @Test
     @DisplayName("Test update functionality success response")
-    void givenIndividualData_whenUpdate_thenSuccessResponse() {
+    void givenMerchantData_whenUpdate_thenSuccessResponse() {
         merchantsTestDataDto.setEmail("new.email@example.com");
         WebTestClient.ResponseSpec resp = webTestClient.put()
                 .uri(REST_URL)

@@ -31,14 +31,14 @@ public class MerchantsService {
     public Mono<MerchantsDto> save(MerchantsDto merchantsDto) {
         return userService.save(merchantsDto.getCreator())
                 .flatMap(savedCreatorDto -> merchantsRepository.save(
-                        Merchants.builder()
-                                .phoneNumber(merchantsDto.getPhoneNumber())
-                                .companyName(merchantsDto.getCompanyName())
-                                .email(merchantsDto.getEmail())
-                                .creatorId(savedCreatorDto.getId())
-                                .filled(merchantsDto.isFilled())
-                                .status(Status.ACTIVE)
-                                .build())
+                                Merchants.builder()
+                                        .phoneNumber(merchantsDto.getPhoneNumber())
+                                        .companyName(merchantsDto.getCompanyName())
+                                        .email(merchantsDto.getEmail())
+                                        .creatorId(savedCreatorDto.getId())
+                                        .filled(merchantsDto.isFilled())
+                                        .status(Status.ACTIVE)
+                                        .build())
                         .doOnSuccess(m -> log.info("In save - merchant: {} saved", m))
                         .flatMap(savedMerchants -> {
                             MerchantsDto savedMerchantsDto = merchantsMapper.map(savedMerchants);
@@ -49,34 +49,36 @@ public class MerchantsService {
 
     @Transactional
     public Mono<MerchantsDto> update(MerchantsDto merchantsDto) {
-        return merchantsRepository.findById(merchantsDto.getId())
-                .switchIfEmpty(Mono.error(new EntityNotFoundException("Merchant not found", "AMS_MERCHANT_NOT_FOUND")))
-                .flatMap(savedMerchant -> userService.update(merchantsDto.getCreator())
-                        .flatMap(updatedCreatorDto -> merchantsRepository.save(
-                                Merchants.builder()
-                                        .id(savedMerchant.getId())
-                                        .creatorId(updatedCreatorDto.getId())
-                                        .phoneNumber(merchantsDto.getPhoneNumber())
-                                        .archivedAt(merchantsDto.getArchivedAt())
-                                        .updated(LocalDateTime.now())
-                                        .email(merchantsDto.getEmail())
-                                        .companyName(merchantsDto.getCompanyName())
-                                        .filled(merchantsDto.isFilled())
-                                        .build())
-                                .doOnSuccess(m -> log.info("In update - merchant: {} updated", m))
-                                .flatMap(updatedMerchant -> {
-                                    MerchantsDto updatedMerchantDto = merchantsMapper.map(updatedMerchant);
-                                    updatedMerchantDto.setCreator(updatedCreatorDto);
-                                    return profileHistoryService.save(
-                                            ProfileHistory.builder()
-                                                    .reason("update")
-                                                    .profileType("creator")
-                                                    .comment("update creator")
-                                                    .profileId(updatedCreatorDto.getId())
-                                                    .changedValues(EntityDtoComparator.findDifferences(savedMerchant, updatedMerchant))
-                                                    .build())
-                                            .flatMap(savedProfileHistory -> Mono.just(updatedMerchantDto));
-                                })));
+        return getById(merchantsDto.getId())
+                .flatMap(savedMerchantDto -> merchantsRepository.findById(merchantsDto.getId())
+                        .flatMap(savedMerchant -> userService.update(merchantsDto.getCreator())
+                                .flatMap(updatedCreatorDto -> merchantsRepository.save(
+                                                Merchants.builder()
+                                                        .id(savedMerchant.getId())
+                                                        .creatorId(updatedCreatorDto.getId())
+                                                        .phoneNumber(merchantsDto.getPhoneNumber())
+                                                        .archivedAt(merchantsDto.getArchivedAt())
+                                                        .updated(LocalDateTime.now())
+                                                        .email(merchantsDto.getEmail())
+                                                        .companyName(merchantsDto.getCompanyName())
+                                                        .filled(merchantsDto.isFilled())
+                                                        .verifiedAt(merchantsDto.getVerifiedAt())
+                                                        .build())
+                                        .doOnSuccess(m -> log.info("In update - merchant: {} updated", m))
+                                        .flatMap(updatedMerchant -> {
+                                            Merchants savedMerchantOld = merchantsMapper.map(savedMerchantDto);
+                                            MerchantsDto updatedMerchantDto = merchantsMapper.map(updatedMerchant);
+                                            updatedMerchantDto.setCreator(updatedCreatorDto);
+                                            return profileHistoryService.save(
+                                                            ProfileHistory.builder()
+                                                                    .reason("update")
+                                                                    .profileType("creator")
+                                                                    .comment("update creator")
+                                                                    .profileId(updatedCreatorDto.getId())
+                                                                    .changedValues(EntityDtoComparator.getChangedValues(savedMerchantOld, updatedMerchant))
+                                                                    .build())
+                                                    .flatMap(savedProfileHistory -> Mono.just(updatedMerchantDto));
+                                        }))));
     }
 
     public Mono<MerchantsDto> getById(UUID uuid) {
@@ -100,22 +102,30 @@ public class MerchantsService {
     }
 
     public Mono<Void> deleteById(UUID uuid) {
-        return merchantsRepository.findById(uuid)
-                .switchIfEmpty(Mono.error(new EntityNotFoundException("Merchant not found", "AMS_MERCHANT_NOT_FOUND")))
-                .flatMap(merchant -> {
-                    merchant.setStatus(Status.ARCHIVED);
-                    merchant.setArchivedAt(LocalDateTime.now());
-                    return merchantsRepository.save(merchant)
-                            .doOnSuccess(m -> log.info("In delete - merchant: {} deleted", m))
-                            .flatMap(savedMerchant -> profileHistoryService.save(
-                                    ProfileHistory.builder()
-                                            .profileId(merchant.getCreatorId())
-                                            .reason("delete")
-                                            .comment("delete merchant")
-                                            .profileType("merchant creator")
-                                            .changedValues("status:ARCHIVED;archivedAt:" + merchant.getArchivedAt() + ";")
-                                            .build()
-                            )).then();
-                });
+        return getById(uuid)
+                .flatMap(savedMerchantDto -> merchantsRepository.findById(uuid)
+                        .flatMap(merchant ->
+                                userService.deleteById(merchant.getCreatorId())
+                                        .then(
+                                                Mono.defer(() -> {
+                                                    Merchants savedMerchantOld = merchantsMapper.map(savedMerchantDto);
+                                                    merchant.setArchivedAt(LocalDateTime.now());
+                                                    merchant.setStatus(Status.ARCHIVED);
+                                                    return merchantsRepository.save(merchant)
+                                                            .doOnSuccess(savedMerchant -> log.info("In delete - merchant: {} archived", savedMerchant))
+                                                            .doOnError(e -> log.error("Error while saving merchant: {}", merchant.getId(), e))
+                                                            .flatMap(savedMerchant ->
+                                                                    profileHistoryService.save(
+                                                                            ProfileHistory.builder()
+                                                                                    .profileId(merchant.getCreatorId())
+                                                                                    .reason("delete")
+                                                                                    .comment("delete merchant")
+                                                                                    .profileType("merchant creator")
+                                                                                    .changedValues(EntityDtoComparator.getChangedValues(savedMerchantOld, savedMerchant))
+                                                                                    .build()
+                                                                    ).doOnError(e -> log.error("Error while saving profile history for merchant: {}", merchant.getId(), e))
+                                                            );
+                                                }))
+                        )).then();
     }
 }

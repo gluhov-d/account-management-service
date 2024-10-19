@@ -31,9 +31,11 @@ dependencies {
 
     implementation("com.github.gluhov:common:1.0.0")
     implementation("org.mapstruct:mapstruct:1.6.2")
+    implementation("org.javers:javers-core:7.6.3")
+    implementation("org.postgresql:r2dbc-postgresql:1.0.7.RELEASE")
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.18.0")
 
     runtimeOnly("org.postgresql:postgresql")
-    runtimeOnly("org.postgresql:r2dbc-postgresql")
 
     compileOnly("org.projectlombok:lombok")
     developmentOnly("org.springframework.boot:spring-boot-docker-compose")

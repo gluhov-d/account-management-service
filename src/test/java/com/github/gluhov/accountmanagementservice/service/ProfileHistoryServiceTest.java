@@ -70,7 +70,7 @@ public class ProfileHistoryServiceTest {
         when(usersService.getById(profileHistoryTestData.getProfileId())).thenReturn(Mono.just(userMerchantTestDataDto));
         when(profileHistoryMapper.map(any(ProfileHistory.class))).thenReturn(profileHistoryTestDataDto);
 
-        Mono<ProfileHistoryDto> result = profileHistoryService.save(profileHistoryTestData);
+        Mono<ProfileHistory> result = profileHistoryService.save(profileHistoryTestData);
         StepVerifier.create(result)
                 .assertNext(r -> {
                     assertNotNull(r);

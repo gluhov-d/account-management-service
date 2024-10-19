@@ -3,6 +3,8 @@ package com.github.gluhov.accountmanagementservice.service;
 import com.github.gluhov.accountmanagementservice.model.ProfileHistory;
 import com.github.gluhov.dto.ProfileHistoryDto;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 import static com.github.gluhov.accountmanagementservice.service.UsersData.USER_MERCHANT_UUID;
@@ -17,9 +19,16 @@ public class ProfileHistoryData {
             .profileId(USER_MERCHANT_UUID)
             .profileType("merchant")
             .comment("update merchant")
-            .changedValues("{\"first_name\":\"John\", \"first_name_old\":\"Johnny\"}")
+            .changedValues(createChangedValuesMap())
             .reason("update")
             .build();
+
+    private static Map<String, Object> createChangedValuesMap() {
+        Map<String, Object> changedValues = new HashMap<>();
+        changedValues.put("first_name", "John");
+        changedValues.put("first_name_old", "Johnny");
+        return changedValues;
+    }
 
     public static ProfileHistoryDto profileHistoryTestDataDto = ProfileHistoryDto.builder()
             .id(profileHistoryTestData.getId())

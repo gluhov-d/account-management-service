@@ -81,7 +81,7 @@ public class MerchantMemberInvitationsServiceTest {
     @Test
     @DisplayName("Test get all by merchant id functionality then success response")
     void givenMerchantId_whenGetAllByMerchantId_thenSuccessResponse() {
-        when(merchantMembersInvitationsRepository.getAllActiveByMerchantId(MERCHANT_UUID)).thenReturn(Flux.fromIterable(Collections.singletonList(merchantMemberInvitationTestData)));
+        when(merchantMembersInvitationsRepository.getAllByMerchantId(MERCHANT_UUID)).thenReturn(Flux.fromIterable(Collections.singletonList(merchantMemberInvitationTestData)));
         when(merchantsService.getById(merchantMemberInvitationTestData.getMerchantId())).thenReturn(Mono.just(merchantsTestDataDto));
         when(merchantMembersInvitationsMapper.map(any(MerchantMembersInvitations.class))).thenReturn(merchantMemberInvitationTestDataDto);
 

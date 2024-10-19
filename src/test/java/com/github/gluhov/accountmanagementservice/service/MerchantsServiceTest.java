@@ -19,7 +19,7 @@ import reactor.test.StepVerifier;
 import java.util.Collections;
 
 import static com.github.gluhov.accountmanagementservice.service.MerchantsData.*;
-import static com.github.gluhov.accountmanagementservice.service.ProfileHistoryData.profileHistoryTestDataDto;
+import static com.github.gluhov.accountmanagementservice.service.ProfileHistoryData.profileHistoryTestData;
 import static com.github.gluhov.accountmanagementservice.service.UsersData.userMerchantTestDataDto;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -59,8 +59,15 @@ public class MerchantsServiceTest {
     @DisplayName("Test delete functionality then success response")
     void givenId_whenDeleteById_thenSuccessResponse() {
         when(merchantsRepository.findById(MERCHANT_UUID)).thenReturn(Mono.just(merchantTestData));
+        when(merchantsService.getById(MERCHANT_UUID)).thenReturn(Mono.just(merchantsTestDataDto));
+        when(merchantsRepository.findById(MERCHANT_UUID)).thenReturn(Mono.just(merchantTestData));
+        when(usersService.deleteById(merchantTestData.getCreatorId())).thenReturn(Mono.empty());
+        when(merchantsMapper.map(any(MerchantsDto.class))).thenReturn(merchantTestData);
         when(merchantsRepository.save(any(Merchants.class))).thenReturn(Mono.just(merchantTestData));
-        when(profileHistoryService.save(any(ProfileHistory.class))).thenReturn(Mono.just(profileHistoryTestDataDto));
+        when(profileHistoryService.save(any(ProfileHistory.class))).thenReturn(Mono.just(profileHistoryTestData));
+
+        when(usersService.getById(merchantTestData.getCreatorId())).thenReturn(Mono.just(userMerchantTestDataDto));
+        when(merchantsMapper.map(any(Merchants.class))).thenReturn(merchantsTestDataDto);
 
         Mono<?> result = merchantsService.deleteById(MERCHANT_UUID);
         StepVerifier.create(result)
@@ -86,11 +93,17 @@ public class MerchantsServiceTest {
     @DisplayName("Test update functionality then success response")
     void givenMerchantDto_whenUpdate_thenSuccessResponse() {
         merchantsTestDataDto.setEmail("new@example.com");
-        when(usersService.update(any(UsersDto.class))).thenReturn(Mono.just(userMerchantTestDataDto));
         when(merchantsRepository.findById(MERCHANT_UUID)).thenReturn(Mono.just(merchantTestData));
-        when(merchantsRepository.save(any(Merchants.class))).thenReturn(Mono.just(merchantTestData));
+        when(usersService.getById(merchantTestData.getCreatorId())).thenReturn(Mono.just(userMerchantTestDataDto));
         when(merchantsMapper.map(any(Merchants.class))).thenReturn(merchantsTestDataDto);
-        when(profileHistoryService.save(any(ProfileHistory.class))).thenReturn(Mono.just(profileHistoryTestDataDto));
+        when(merchantsService.getById(MERCHANT_UUID)).thenReturn(Mono.just(merchantsTestDataDto));
+
+        when(merchantsRepository.findById(MERCHANT_UUID)).thenReturn(Mono.just(merchantTestData));
+        when(usersService.update(any(UsersDto.class))).thenReturn(Mono.just(userMerchantTestDataDto));
+        when(merchantsRepository.save(any(Merchants.class))).thenReturn(Mono.just(merchantTestData));
+        when(merchantsMapper.map(any(MerchantsDto.class))).thenReturn(merchantTestData);
+        when(merchantsMapper.map(any(Merchants.class))).thenReturn(merchantsTestDataDto);
+        when(profileHistoryService.save(any(ProfileHistory.class))).thenReturn(Mono.just(profileHistoryTestData));
 
         Mono<MerchantsDto> result = merchantsService.update(merchantsTestDataDto);
         StepVerifier.create(result)

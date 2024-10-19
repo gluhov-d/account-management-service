@@ -47,13 +47,12 @@ public class MerchantMembersInvitationsService {
                 .flatMap(merchantMembersInvitations -> {
                     merchantMembersInvitations.setStatus(Status.ARCHIVED);
                     return merchantMembersInvitationsRepository.save(merchantMembersInvitations)
-                            .doOnSuccess(m -> log.info("In delete - merchant member invitation: {} deleted", m))
-                            .then();
-                });
+                            .doOnSuccess(m -> log.info("In delete - merchant member invitation: {} deleted", m));
+                }).then();
     }
 
     public Flux<MerchantMembersInvitationsDto> getAllByMerchantId(UUID uuid) {
-        return merchantMembersInvitationsRepository.getAllActiveByMerchantId(uuid)
+        return merchantMembersInvitationsRepository.getAllByMerchantId(uuid)
                 .flatMap(this::constructMerchantMembersInvitationsDto);
     }
 

@@ -1,37 +1,32 @@
 package com.github.gluhov.accountmanagementservice.util;
 
 import lombok.experimental.UtilityClass;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanUtils;
+import org.javers.core.Javers;
+import org.javers.core.JaversBuilder;
+import org.javers.core.diff.Diff;
+import org.javers.core.diff.changetype.ValueChange;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @UtilityClass
-@Slf4j
 public class EntityDtoComparator {
-    public static String findDifferences(Object entity, Object dto) {
-        StringBuilder differences = new StringBuilder();
+    private static final Javers javers = JaversBuilder.javers().build();
 
-        var entityProps = BeanUtils.getPropertyDescriptors(entity.getClass());
-        for (var prop : entityProps) {
-            try {
-                Object entityValue = prop.getReadMethod().invoke(entity);
-                Object dtoValue = prop.getReadMethod().invoke(dto);
+    public static Map<String, Object> getChangedValues(Object oldObject, Object newObject) {
+        Diff diff = javers.compare(oldObject, newObject);
+        Map<String, Object> changesMap = new HashMap<>();
 
-                if (entityValue != null && dtoValue != null && !entityValue.equals(dtoValue)) {
-                    differences.append(prop.getName());
-                    differences.append(":");
-                    differences.append(entityValue);
-                    differences.append(";");
-                } else if ((entityValue == null && dtoValue != null) || (entityValue != null && dtoValue == null)) {
-                    differences.append(prop.getName());
-                    differences.append(":");
-                    differences.append(entityValue);
-                    differences.append(";");
-                }
-            } catch (Exception e) {
-                log.error("Error while compare dto and entity: " + e.getMessage());
-            }
+        List<ValueChange> changes = diff.getChangesByType(ValueChange.class);
+        for (ValueChange change : changes) {
+            String fieldName = change.getPropertyName();
+            Map<String, Object> changeDetails = new HashMap<>();
+            changeDetails.put("old_value", change.getLeft());
+            changeDetails.put("new_value", change.getRight());
+            changesMap.put(fieldName, changeDetails);
         }
 
-        return differences.toString();
+        return changesMap;
     }
 }

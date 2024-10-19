@@ -23,8 +23,8 @@ INSERT INTO individuals (id, user_id, passport_number, email, phone_number) VALU
                                                                                                                   ('eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee', '99999999-9999-9999-9999-999999999999', 'A1234567', 'max.mustermann@example.com', '123-456-7890');
 
 INSERT INTO profile_history (id, profile_id, profile_type, reason, comment, changed_values) VALUES
-                                                                                                ('11111111-2222-3333-4444-555555555555', '77777777-7777-7777-7777-777777777777', 'merchant', 'update', 'update merchant', '{"first_name":"John", "first_name_old":"Johnny"}'),
-                                                                                                ('66666666-7777-8888-9999-aaaaaaaaaaaa', '88888888-8888-8888-8888-888888888888', 'user', 'Status Update', 'User status changed to inactive', '{"status":"inactive", "status_old":"active"}');
+                                                                                                ('11111111-2222-3333-4444-555555555555', '77777777-7777-7777-7777-777777777777', 'merchant', 'update', 'update merchant', '{"first_name": "John", "first_name_old": "Johnny"}'::jsonb),
+                                                                                                ('66666666-7777-8888-9999-aaaaaaaaaaaa', '88888888-8888-8888-8888-888888888888', 'user', 'Status Update', 'User status changed to inactive', '{"first_name": "John", "first_name_old": "Johnny"}'::jsonb);
 
 INSERT INTO merchant_members_invitations (id, expires, merchant_id, first_name, last_name, email, status) VALUES
                                                                                                               ('bbbbbbbb-cccc-dddd-eeee-ffffffffffff', '2024-01-01 12:00:00', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'Michael', 'Jordan', 'mjordan@example.com', 'ACTIVE'),

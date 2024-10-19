@@ -43,12 +43,13 @@ public class AddressesService {
     }
 
     public Mono<Void> deleteById(UUID uuid) {
-        log.info("IN delete - address uuid: {} ", uuid);
-        return getById(uuid)
+        return addressesRepository.findById(uuid)
+                .switchIfEmpty(Mono.error(new EntityNotFoundException("Address not found", "AMS_ADDRESS_NOT_FOUND")))
                 .flatMap(addresses -> {
                     addresses.setArchivedAt(LocalDateTime.now());
-                    return addressesRepository.save(addresses).then();
-                });
+                    return addressesRepository.save(addresses)
+                            .doOnSuccess(a -> log.info("IN delete - address: {} deleted", a));
+                }).then();
     }
 
     public Mono<Addresses> update(Addresses addresses) {
@@ -61,7 +62,9 @@ public class AddressesService {
                                         .state(addresses.getState())
                                         .zipCode(addresses.getZipCode())
                                         .city(addresses.getCity())
+                                        .address(addresses.getAddress())
                                         .countryId(newCountry.getId())
+                                        .updated(LocalDateTime.now())
                                         .build()
                         )));
     }

@@ -21,9 +21,8 @@ public class ProfileHistoryService {
     private final ProfileHistoryMapper profileHistoryMapper;
     private final UsersService usersService;
 
-    public Mono<ProfileHistoryDto> save(ProfileHistory profileHistory) {
+    public Mono<ProfileHistory> save(ProfileHistory profileHistory) {
         return profileHistoryRepository.save(profileHistory)
-                .flatMap(this::constructProfileHistoryDto)
                 .doOnSuccess(p -> log.info("In save - profile history: {} saved", p));
     }
 

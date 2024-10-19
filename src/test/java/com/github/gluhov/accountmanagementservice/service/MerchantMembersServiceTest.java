@@ -22,7 +22,7 @@ import java.util.Collections;
 import static com.github.gluhov.accountmanagementservice.service.MerchantMembersData.*;
 import static com.github.gluhov.accountmanagementservice.service.MerchantsData.MERCHANT_UUID;
 import static com.github.gluhov.accountmanagementservice.service.MerchantsData.merchantsTestDataDto;
-import static com.github.gluhov.accountmanagementservice.service.ProfileHistoryData.profileHistoryTestDataDto;
+import static com.github.gluhov.accountmanagementservice.service.ProfileHistoryData.profileHistoryTestData;
 import static com.github.gluhov.accountmanagementservice.service.UsersData.userMerchantMemberTestDataDto;
 import static com.github.gluhov.accountmanagementservice.service.UsersData.userMerchantTestDataDto;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -48,8 +48,10 @@ public class MerchantMembersServiceTest {
     @Test
     @DisplayName("Test get functionality then success response")
     void givenId_whenGetById_thenSuccessResponse() {
-        when(merchantMembersRepository.findById(MERCHANT_MEMBER_UUID)).thenReturn(Mono.just(merchantMemberTestData));
         when(merchantMembersMapper.map(any(MerchantMembers.class))).thenReturn(merchantMemberTestDataDto);
+        when(usersService.getById(merchantMemberTestData.getUserId())).thenReturn(Mono.just(userMerchantMemberTestDataDto));
+        when(merchantsService.getById(merchantMemberTestData.getMerchantId())).thenReturn(Mono.just(merchantsTestDataDto));
+        when(merchantMembersRepository.findById(MERCHANT_MEMBER_UUID)).thenReturn(Mono.just(merchantMemberTestData));
 
         Mono<MerchantMembersDto> result = merchantMembersService.getById(MERCHANT_MEMBER_UUID);
         StepVerifier.create(result)
@@ -64,8 +66,15 @@ public class MerchantMembersServiceTest {
     @DisplayName("Test delete functionality then success response")
     void givenId_whenDeleteById_thenSuccessResponse() {
         when(merchantMembersRepository.findById(MERCHANT_MEMBER_UUID)).thenReturn(Mono.just(merchantMemberTestData));
+        when(merchantMembersService.getById(MERCHANT_MEMBER_UUID)).thenReturn(Mono.just(merchantMemberTestDataDto));
+        when(merchantsService.getById(MERCHANT_UUID)).thenReturn(Mono.just(merchantsTestDataDto));
+        when(usersService.getById(merchantMemberTestData.getUserId())).thenReturn(Mono.just(userMerchantMemberTestDataDto));
+        when(merchantMembersMapper.map(any(MerchantMembers.class))).thenReturn(merchantMemberTestDataDto);
+
+        when(merchantMembersRepository.findById(MERCHANT_MEMBER_UUID)).thenReturn(Mono.just(merchantMemberTestData));
         when(merchantMembersRepository.save(any(MerchantMembers.class))).thenReturn(Mono.empty());
-        when(profileHistoryService.save(any(ProfileHistory.class))).thenReturn(Mono.just(profileHistoryTestDataDto));
+        when(merchantMembersMapper.map(any(MerchantMembersDto.class))).thenReturn(merchantMemberTestData);
+        when(profileHistoryService.save(any(ProfileHistory.class))).thenReturn(Mono.just(profileHistoryTestData));
         when(usersService.deleteById(any())).thenReturn(Mono.empty());
 
         Mono<?> result = merchantMembersService.deleteById(MERCHANT_MEMBER_UUID);
@@ -96,11 +105,17 @@ public class MerchantMembersServiceTest {
     void givenMerchantMemberData_whenUpdate_thenSuccessResponse() {
         merchantMemberTestDataDto.setMemberRole(Role.MERCHANT_USER.name());
         when(merchantMembersRepository.findById(MERCHANT_MEMBER_UUID)).thenReturn(Mono.just(merchantMemberTestData));
+        when(merchantMembersService.getById(MERCHANT_MEMBER_UUID)).thenReturn(Mono.just(merchantMemberTestDataDto));
+        when(merchantsService.getById(MERCHANT_UUID)).thenReturn(Mono.just(merchantsTestDataDto));
+        when(usersService.getById(merchantMemberTestData.getUserId())).thenReturn(Mono.just(userMerchantMemberTestDataDto));
+        when(merchantMembersMapper.map(any(MerchantMembers.class))).thenReturn(merchantMemberTestDataDto);
+
+        when(merchantMembersRepository.findById(MERCHANT_MEMBER_UUID)).thenReturn(Mono.just(merchantMemberTestData));
         when(merchantsService.getById(merchantMemberTestData.getMerchantId())).thenReturn(Mono.just(merchantsTestDataDto));
         when(usersService.update(any(UsersDto.class))).thenReturn(Mono.just(userMerchantMemberTestDataDto));
         when(merchantMembersRepository.save(any(MerchantMembers.class))).thenReturn(Mono.just(merchantMemberTestData));
         when(merchantMembersMapper.map(any(MerchantMembers.class))).thenReturn(merchantMemberTestDataDto);
-        when(profileHistoryService.save(any(ProfileHistory.class))).thenReturn(Mono.just(profileHistoryTestDataDto));
+        when(profileHistoryService.save(any(ProfileHistory.class))).thenReturn(Mono.just(profileHistoryTestData));
 
         Mono<MerchantMembersDto> result = merchantMembersService.update(merchantMemberTestDataDto);
         StepVerifier.create(result)
@@ -123,5 +138,4 @@ public class MerchantMembersServiceTest {
         StepVerifier.create(result)
                 .expectNextCount(1).verifyComplete();
     }
-
 }

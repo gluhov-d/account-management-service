@@ -79,15 +79,14 @@ public class UsersService {
     }
 
     public Mono<Void> deleteById(UUID uuid) {
-        return getById(uuid)
-                .flatMap(savedUserDto -> addressesService.deleteById(savedUserDto.getAddresses().getId())
-                        .flatMap(updatedAddress -> usersRepository.save(
-                                Users.builder()
-                                        .id(savedUserDto.getId())
-                                        .status(Status.ARCHIVED)
-                                        .archivedAt(LocalDateTime.now())
-                                        .build())
-                                .doOnSuccess(u -> log.info("In delete - user: {} deleted", u))
-                        )).then();
+        return usersRepository.findById(uuid)
+                .switchIfEmpty(Mono.error(new EntityNotFoundException("User not found", "AMS_USER_NOT_FOUND")))
+                .flatMap(savedUser -> addressesService.deleteById(savedUser.getAddressId())
+                        .then(Mono.defer(() -> {
+                            savedUser.setArchivedAt(LocalDateTime.now());
+                            savedUser.setStatus(Status.ARCHIVED);
+                            return usersRepository.save(savedUser)
+                                    .doOnSuccess(u -> log.info("In delete - user: {} deleted", u));
+                        }))).then();
     }
 }

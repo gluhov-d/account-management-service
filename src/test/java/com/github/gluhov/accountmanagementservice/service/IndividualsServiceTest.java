@@ -20,7 +20,7 @@ import java.util.Collections;
 
 import static com.github.gluhov.accountmanagementservice.service.AddressesData.addressIndividualTestData;
 import static com.github.gluhov.accountmanagementservice.service.IndividualsData.*;
-import static com.github.gluhov.accountmanagementservice.service.ProfileHistoryData.profileHistoryTestDataDto;
+import static com.github.gluhov.accountmanagementservice.service.ProfileHistoryData.profileHistoryTestData;
 import static com.github.gluhov.accountmanagementservice.service.UsersData.userIndividualTestDataDto;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -63,8 +63,13 @@ public class IndividualsServiceTest {
     @DisplayName("Test delete functionality then success response")
     void givenId_whenDeleteById_thenSuccessResponse() {
         when(individualsRepository.findById(INDIVIDUAL_UUID)).thenReturn(Mono.just(individualTestData));
+        when(individualsService.getById(INDIVIDUAL_UUID)).thenReturn(Mono.just(individualsTestDataDto));
+        when(usersService.getById(individualTestData.getUserId())).thenReturn(Mono.just(userIndividualTestDataDto));
+        when(individualsMapper.map(any(Individuals.class))).thenReturn(individualsTestDataDto);
+
+        when(individualsRepository.findById(INDIVIDUAL_UUID)).thenReturn(Mono.just(individualTestData));
         when(individualsRepository.save(any(Individuals.class))).thenReturn(Mono.just(individualTestData));
-        when(profileHistoryService.save(any(ProfileHistory.class))).thenReturn(Mono.just(profileHistoryTestDataDto));
+        when(profileHistoryService.save(any(ProfileHistory.class))).thenReturn(Mono.just(profileHistoryTestData));
         when(usersService.deleteById(individualTestData.getUserId())).thenReturn(Mono.empty());
 
         Mono<?> result = individualsService.deleteById(INDIVIDUAL_UUID);
@@ -92,12 +97,17 @@ public class IndividualsServiceTest {
     @DisplayName("Test update functionality then success response")
     void givenIndividualDto_whenUpdate_thenSuccessResponse() {
         individualsTestDataDto.setEmail("new@example.com");
+        when(individualsRepository.findById(INDIVIDUAL_UUID)).thenReturn(Mono.just(individualTestData));
+        when(individualsService.getById(INDIVIDUAL_UUID)).thenReturn(Mono.just(individualsTestDataDto));
+        when(usersService.getById(individualTestData.getUserId())).thenReturn(Mono.just(userIndividualTestDataDto));
+        when(individualsMapper.map(any(Individuals.class))).thenReturn(individualsTestDataDto);
+
         when(usersService.update(any(UsersDto.class))).thenReturn(Mono.just(userIndividualTestDataDto));
         when(individualsRepository.findById(INDIVIDUAL_UUID)).thenReturn(Mono.just(individualTestData));
         when(individualsRepository.save(any(Individuals.class))).thenReturn(Mono.just(individualTestData));
         when(addressesService.getById(individualTestData.getUser().getAddressId())).thenReturn(Mono.just(addressIndividualTestData));
         when(individualsMapper.map(any(Individuals.class))).thenReturn(individualsTestDataDto);
-        when(profileHistoryService.save(any(ProfileHistory.class))).thenReturn(Mono.just(profileHistoryTestDataDto));
+        when(profileHistoryService.save(any(ProfileHistory.class))).thenReturn(Mono.just(profileHistoryTestData));
 
         Mono<IndividualsDto> result = individualsService.update(individualsTestDataDto);
         StepVerifier.create(result)

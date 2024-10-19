@@ -49,33 +49,34 @@ public class MerchantMembersService {
 
     @Transactional
     public Mono<MerchantMembersDto> update(MerchantMembersDto merchantMembersDto) {
-        return merchantMembersRepository.findById(merchantMembersDto.getId())
-                .switchIfEmpty(Mono.error(new EntityNotFoundException("Merchant member not found", "AMS_MERCHANT_MEMBER_NOT_FOUND")))
-                .flatMap(savedMerchantMember -> merchantsService.getById(merchantMembersDto.getMerchantId())
-                        .flatMap(savedMerchantDto -> usersService.update(merchantMembersDto.getUser())
-                                .flatMap(updatedUserDto -> merchantMembersRepository.save(
-                                        MerchantMembers.builder()
-                                                .id(savedMerchantMember.getId())
-                                                .merchantId(savedMerchantDto.getId())
-                                                .memberRole(Role.valueOf(merchantMembersDto.getMemberRole().toUpperCase()))
-                                                .userId(updatedUserDto.getId())
-                                                .build())
-                                        .doOnSuccess(m -> log.info("In update - merchant member: {} updated", m))
-                                        .flatMap(updatedMerchantMember -> {
-                                            MerchantMembersDto updatedMerchantMemberDto = merchantMembersMapper.map(updatedMerchantMember);
-                                            updatedMerchantMemberDto.setMerchant(savedMerchantDto);
-                                            updatedMerchantMemberDto.setUser(updatedUserDto);
-                                            return profileHistoryService.save(
-                                                    ProfileHistory.builder()
-                                                            .reason("update")
-                                                            .profileType("merchant member")
-                                                            .comment("update merchant member")
-                                                            .profileId(updatedUserDto.getId())
-                                                            .changedValues(EntityDtoComparator.findDifferences(savedMerchantMember, updatedMerchantMember))
-                                                            .build())
-                                                    .flatMap(savedProfileHistory -> Mono.just(updatedMerchantMemberDto));
-                                        })
-                                )));
+        return getById(merchantMembersDto.getId())
+                .flatMap(savedMerchantMemberDto -> merchantMembersRepository.findById(merchantMembersDto.getId())
+                        .flatMap(savedMerchantMember -> merchantsService.getById(merchantMembersDto.getMerchantId())
+                                .flatMap(savedMerchantDto -> usersService.update(merchantMembersDto.getUser())
+                                        .flatMap(updatedUserDto -> merchantMembersRepository.save(
+                                                        MerchantMembers.builder()
+                                                                .id(savedMerchantMember.getId())
+                                                                .merchantId(savedMerchantDto.getId())
+                                                                .memberRole(Role.valueOf(merchantMembersDto.getMemberRole().toUpperCase()))
+                                                                .userId(updatedUserDto.getId())
+                                                                .build())
+                                                .doOnSuccess(m -> log.info("In update - merchant member: {} updated", m))
+                                                .flatMap(updatedMerchantMember -> {
+                                                    MerchantMembers savedMerchantMemberOld = merchantMembersMapper.map(savedMerchantMemberDto);
+                                                    MerchantMembersDto updatedMerchantMemberDto = merchantMembersMapper.map(updatedMerchantMember);
+                                                    updatedMerchantMemberDto.setMerchant(savedMerchantDto);
+                                                    updatedMerchantMemberDto.setUser(updatedUserDto);
+                                                    return profileHistoryService.save(
+                                                                    ProfileHistory.builder()
+                                                                            .reason("update")
+                                                                            .profileType("merchant member")
+                                                                            .comment("update merchant member")
+                                                                            .profileId(updatedUserDto.getId())
+                                                                            .changedValues(EntityDtoComparator.getChangedValues(savedMerchantMemberOld, updatedMerchantMember))
+                                                                            .build())
+                                                            .flatMap(savedProfileHistory -> Mono.just(updatedMerchantMemberDto));
+                                                })
+                                        ))));
     }
 
     private Mono<MerchantMembersDto> constructMerchantMembersDto(MerchantMembers merchantMembers) {
@@ -92,25 +93,28 @@ public class MerchantMembersService {
     public Mono<MerchantMembersDto> getById(UUID uuid) {
         return merchantMembersRepository.findById(uuid)
                 .switchIfEmpty(Mono.error(new EntityNotFoundException("Merchant member not found", "AMS_MERCHANT_MEMBER_NOT_FOUND")))
-                .map(merchantMembersMapper::map);
+                .flatMap(this::constructMerchantMembersDto);
     }
 
     @Transactional
     public Mono<Void> deleteById(UUID uuid) {
-        return merchantMembersRepository.findById(uuid)
-                .switchIfEmpty(Mono.error(new EntityNotFoundException("Merchant member not found", "AMS_MERCHANT_MEMBER_NOT_FOUND")))
-                .flatMap(merchantMembers -> usersService.deleteById(merchantMembers.getUserId())
-                        .flatMap(deletedUser -> merchantMembersRepository.save(merchantMembers)
-                                .doOnSuccess(m -> log.info("In delete - merchant member: {} deleted", m))
-                                .flatMap(savedMerchantMember -> profileHistoryService.save(
-                                        ProfileHistory.builder()
-                                                .profileId(merchantMembers.getUserId())
-                                                .reason("delete")
-                                                .comment("delete merchant member")
-                                                .profileType("merchant member")
-                                                .changedValues("status:ARCHIVED;archivedAt:" + merchantMembers.getUser().getArchivedAt() + ";")
-                                                .build()
-                                )).then()));
+        return getById(uuid)
+                .flatMap(savedMerchantMemberDto -> merchantMembersRepository.findById(uuid)
+                        .flatMap(merchantMembers -> usersService.deleteById(merchantMembers.getUserId())
+                                .then(Mono.defer(() -> {
+                                    MerchantMembers savedMerchantMemberOld = merchantMembersMapper.map(savedMerchantMemberDto);
+                                    return merchantMembersRepository.save(merchantMembers)
+                                            .doOnSuccess(m -> log.info("In delete - merchant member: {} deleted", m))
+                                            .flatMap(savedMerchantMember -> profileHistoryService.save(
+                                                    ProfileHistory.builder()
+                                                            .profileId(merchantMembers.getUserId())
+                                                            .reason("delete")
+                                                            .comment("delete merchant member")
+                                                            .profileType("merchant member")
+                                                            .changedValues(EntityDtoComparator.getChangedValues(savedMerchantMemberOld, savedMerchantMember))
+                                                            .build()
+                                            ));
+                                })))).then();
     }
 
     public Flux<MerchantMembersDto> getAllByMerchantId(UUID uuid) {

@@ -24,7 +24,6 @@ public class IndividualsService {
     private final IndividualsMapper individualsMapper;
     private final UsersService usersService;
     private final ProfileHistoryService profileHistoryService;
-    private final AddressesService addressesService;
 
     @Transactional
     public Mono<IndividualsDto> save(IndividualsDto individualsDto) {
@@ -46,31 +45,33 @@ public class IndividualsService {
 
     @Transactional
     public Mono<IndividualsDto> update(IndividualsDto individualsDto) {
-        return individualsRepository.findById(individualsDto.getId())
-                .switchIfEmpty(Mono.error(new EntityNotFoundException("Individual not found", "AMS_INDIVIDUAL_NOT_FOUND")))
-                .flatMap(savedIndividual -> usersService.update(individualsDto.getUser())
-                        .flatMap(updatedUserDto -> individualsRepository.save(
-                                Individuals.builder()
-                                        .id(savedIndividual.getId())
-                                        .passportNumber(individualsDto.getPassportNumber())
-                                        .phoneNumber(individualsDto.getPhoneNumber())
-                                        .email(individualsDto.getEmail())
-                                        .build())
-                                .doOnSuccess(i -> log.info("In update - individual: {} updated", i))
-                                .flatMap(updatedIndividual -> {
-                                    IndividualsDto updatedIndividualDto = individualsMapper.map(updatedIndividual);
-                                    updatedIndividualDto.setUser(updatedUserDto);
-                                    return profileHistoryService.save(
-                                            ProfileHistory.builder()
-                                                    .reason("update")
-                                                    .profileType("individual")
-                                                    .comment("update individual")
-                                                    .profileId(updatedUserDto.getId())
-                                                    .changedValues(EntityDtoComparator.findDifferences(savedIndividual, updatedIndividual))
-                                                    .build())
-                                            .flatMap(savedProfileHistory -> Mono.just(updatedIndividualDto));
-                                })
-                        ));
+        return getById(individualsDto.getId())
+                .flatMap(savedIndividualDto -> individualsRepository.findById(individualsDto.getId())
+                        .switchIfEmpty(Mono.error(new EntityNotFoundException("Individual not found", "AMS_INDIVIDUAL_NOT_FOUND")))
+                        .flatMap(savedIndividual -> usersService.update(individualsDto.getUser())
+                                .flatMap(updatedUserDto -> individualsRepository.save(
+                                                Individuals.builder()
+                                                        .id(savedIndividual.getId())
+                                                        .passportNumber(individualsDto.getPassportNumber())
+                                                        .phoneNumber(individualsDto.getPhoneNumber())
+                                                        .email(individualsDto.getEmail())
+                                                        .build())
+                                        .doOnSuccess(i -> log.info("In update - individual: {} updated", i))
+                                        .flatMap(updatedIndividual -> {
+                                            Individuals savedIndividualOld = individualsMapper.map(savedIndividualDto);
+                                            IndividualsDto updatedIndividualDto = individualsMapper.map(updatedIndividual);
+                                            updatedIndividualDto.setUser(updatedUserDto);
+                                            return profileHistoryService.save(
+                                                            ProfileHistory.builder()
+                                                                    .reason("update")
+                                                                    .profileType("individual")
+                                                                    .comment("update individual")
+                                                                    .profileId(updatedUserDto.getId())
+                                                                    .changedValues(EntityDtoComparator.getChangedValues(savedIndividualOld, updatedIndividual))
+                                                                    .build())
+                                                    .flatMap(savedProfileHistory -> Mono.just(updatedIndividualDto));
+                                        })
+                                )));
     }
 
     public Mono<IndividualsDto> getById(UUID uuid) {
@@ -81,20 +82,23 @@ public class IndividualsService {
 
     @Transactional
     public Mono<Void> deleteById(UUID uuid) {
-        return individualsRepository.findById(uuid)
-                .switchIfEmpty(Mono.error(new EntityNotFoundException("Individual not found", "AMS_INDIVIDUAL_NOT_FOUND")))
-                .flatMap(individual -> usersService.deleteById(individual.getUserId())
-                        .flatMap(deletedUser -> individualsRepository.save(individual)
-                                .doOnSuccess(i -> log.info("In delete - individual: {} deleted", i))
-                                .flatMap(savedIndividual -> profileHistoryService.save(
-                                        ProfileHistory.builder()
-                                                .profileId(individual.getUserId())
-                                                .reason("delete")
-                                                .comment("delete individual")
-                                                .profileType("individual")
-                                                .changedValues("status:ARCHIVED;archivedAt:" + individual.getUser().getArchivedAt() + ";")
-                                                .build()
-                                )).then()));
+        return getById(uuid)
+                .flatMap(savedIndividualDto -> individualsRepository.findById(uuid)
+                        .flatMap(individual -> usersService.deleteById(individual.getUserId())
+                                .then(Mono.defer(() -> {
+                                    Individuals savedIndividualOld = individualsMapper.map(savedIndividualDto);
+                                    return individualsRepository.save(individual)
+                                            .doOnSuccess(i -> log.info("In delete - individual: {} deleted", i))
+                                            .flatMap(savedIndividual -> profileHistoryService.save(
+                                                    ProfileHistory.builder()
+                                                            .profileId(individual.getUserId())
+                                                            .reason("delete")
+                                                            .comment("delete individual")
+                                                            .profileType("individual")
+                                                            .changedValues(EntityDtoComparator.getChangedValues(savedIndividualOld, savedIndividual))
+                                                            .build()
+                                            ));
+                                })))).then();
     }
 
     public Flux<IndividualsDto> getAll() {
@@ -104,11 +108,10 @@ public class IndividualsService {
 
     private Mono<IndividualsDto> constructIndividualsDto(Individuals individuals) {
         return usersService.getById(individuals.getUserId())
-                .flatMap(savedUserDto -> addressesService.getById(savedUserDto.getAddresses().getId())
-                        .flatMap(address -> {
+                .flatMap(savedUserDto -> {
                             IndividualsDto individualsDto = individualsMapper.map(individuals);
                             individualsDto.setUser(savedUserDto);
                             return Mono.just(individualsDto);
-                        }));
+                        });
     }
 }
