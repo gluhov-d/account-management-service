@@ -23,7 +23,7 @@ public class IndividualsRestControllerV1 {
 
     @GetMapping(value = "/{id}/details")
     public Mono<?> getById(@PathVariable UUID id) {
-        return individualsService.getById(id).map(individualsDto -> ResponseEntity.ok().body(individualsDto));
+        return individualsService.getById(id);
     }
 
     @DeleteMapping(value = "/{id}")
@@ -34,7 +34,7 @@ public class IndividualsRestControllerV1 {
 
     @PostMapping
     public Mono<?> create(@RequestBody IndividualsDto individualsDto) {
-        return individualsService.save(individualsDto).map(individualDto -> ResponseEntity.ok().body(individualDto));
+        return individualsService.save(individualsDto);
     }
 
     @PutMapping

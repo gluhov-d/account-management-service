@@ -29,15 +29,17 @@ public class Individuals implements Persistable<UUID> {
     private String email;
     @Column("phone_number")
     private String phoneNumber;
-
+    @Transient
+    private String password;
     @Builder
-    public Individuals(UUID id, Users user, UUID userId, String passportNumber, String email, String phoneNumber) {
+    public Individuals(UUID id, Users user, UUID userId, String passportNumber, String email, String phoneNumber, String password) {
         this.id = id;
         this.user = user;
         this.userId = userId;
         this.passportNumber = passportNumber;
         this.email = email;
         this.phoneNumber = phoneNumber;
+        this.password = password;
     }
 
     @Override

@@ -5,9 +5,9 @@ spring:
   application:
     name: account-management-service
   r2dbc:
-    url: r2dbc:pool:postgresql://localhost:55722/account_management
-    username: accountmanagement
-    password: accountmanagement
+    url: r2dbc:pool:postgresql://${POSTGRES_URL}/${DB_NAME}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
   flyway:
-    url: r2dbc:pool:postgresql://localhost:55722/account_management
+    url: r2dbc:pool:postgresql://${POSTGRES_URL}/${DB_NAME}
     locations: classpath:db/migration
